@@ -26,7 +26,7 @@ module.exports = {
     'no-shadow': 'off',
     'no-underscore-dangle': ['error', { 'allow': ['_id'] }],
     'no-unused-expressions': ['error', { 'allowTaggedTemplates': true }],
-    'no-unused-vars': ['error', { 'argsIgnorePattern': 'next' }],
+    'no-unused-vars': ['error', { 'argsIgnorePattern': 'next'}],
     'no-use-before-define': ['error', { 'variables': false }],
     'object-curly-spacing': ['error', 'always'],
     'object-curly-newline': ['error', {
