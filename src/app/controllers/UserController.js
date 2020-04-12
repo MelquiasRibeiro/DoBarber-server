@@ -27,24 +27,27 @@ class UserController {
   }
 
   async update(req, res) {
-    const { email, oldPasswor } = req.body;
+    const { email, oldPassword } = req.body;
 
-    const user = await User.findPK(req.userID);
+    const user = await User.findByPk(req.userId);
+
     if (email !== user.email) {
       const userExist = await User.findOne({ where: { email } });
 
       if (userExist) {
-        return res.status(400).json({
-          error: 'this email is alredy registred in our database',
-        });
+        return res
+          .status(400)
+          .json({ error: 'this email is alredy registred in our database' });
       }
-      if (!(await user.checkPassword(oldPasswor))) {
-        return res.status(401).json({ password: 'password is wrong' });
-      }
-      const { id, name, provider } = await User.update(req.body);
-
-      return res.json({ email, id, name, provider });
     }
+
+    if (oldPassword && !(await user.checkPassword(oldPassword))) {
+      return res.status(401).json({ error: 'password is wrong' });
+    }
+
+    const { id, name, provider } = await user.update(req.body);
+
+    return res.json({ id, name, provider });
   }
 
   async destroy(req, res) {
@@ -53,4 +56,5 @@ class UserController {
     return res.status(204);
   }
 }
+
 export default new UserController();
