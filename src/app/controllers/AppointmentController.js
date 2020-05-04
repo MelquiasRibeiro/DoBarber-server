@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format, subHours } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import Appointment from '../models/Appointment';
 import User from '../models/User';
@@ -108,6 +108,31 @@ class AppointmentController {
     });
 
     return res.status(201).json(appointment);
+  }
+
+  async destroy(req, res) {
+    const { id } = req.params;
+
+    const apponitment = await Appointment.findByPk(id);
+
+    if (req.userId !== apponitment.user_id) {
+      return res
+        .status(401)
+        .json({ erro: 'you only cancel your appointments' });
+    }
+
+    const subdate = subHours(apponitment.date, 2);
+
+    if (isBefore(subdate, new Date())) {
+      return res.status(401).json({
+        erro: `you only can cancel this appointment until 2 hours before`,
+      });
+    }
+    apponitment.canceled_at = new Date();
+
+    await apponitment.save();
+
+    return res.json(apponitment);
   }
 }
 
