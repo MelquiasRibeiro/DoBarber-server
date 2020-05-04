@@ -56,9 +56,15 @@ class AppointmentController {
     });
 
     if (!isProvider) {
-      res
+      return res
         .status(401)
         .json({ error: 'you can only create appointment with providers' });
+    }
+    // a provider can't mark an apponitment with himself
+    if (req.userId === provider_id) {
+      return res
+        .status(400)
+        .json({ error: 'you can not create an appointment with your self' });
     }
 
     //  this hour is  valid ??
@@ -97,7 +103,7 @@ class AppointmentController {
 
     // creating a notification
     await Notification.create({
-      content: `Nova notificação de ${ user.name } para o ${ formatedDate } `,
+      content: `Nova notificação de ${user.name} para o ${formatedDate} `,
       user: provider_id,
     });
 
