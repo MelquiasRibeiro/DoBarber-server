@@ -104,7 +104,7 @@ class AppointmentController {
 
     // creating a notification
     await Notification.create({
-      content: `Nova notificação de ${user.name} para o ${formatedDate} `,
+      content: `Nova notificação de ${ user.name } para o ${ formatedDate } `,
       user: provider_id,
     });
 
@@ -120,6 +120,11 @@ class AppointmentController {
           model: User,
           as: 'provider',
           attributes: ['name', 'email'],
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name'],
         },
       ],
     });
@@ -139,13 +144,20 @@ class AppointmentController {
     }
     apponitment.canceled_at = new Date();
 
-    await apponitment.save();
-
     await Mail.sendMail({
-      to: `${apponitment.provider.name}<${apponitment.provider.email}>`,
+      to: `${ apponitment.provider.name }<${ apponitment.provider.email }>`,
       subject: 'Agendamento Cancelado',
-      text: 'você tem um novo cancelamento',
+      template: 'cancellation',
+      context: {
+        provider: apponitment.provider.name,
+        user: apponitment.user.name,
+        date: format(apponitment.date, "'dia' dd 'de' MMM', às' H:mm'h' ", {
+          locale: pt,
+        }),
+      },
     });
+
+    await apponitment.save();
 
     return res.json(apponitment);
   }
