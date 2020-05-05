@@ -5,7 +5,8 @@ import Appointment from '../models/Appointment';
 import User from '../models/User';
 import File from '../models/File';
 import Notification from '../schemas/Notification';
-import Mail from '../../lib/Mail';
+import Queue from '../../lib/Queue';
+import CancellationMail from '../jobs/CancellationMail';
 
 class AppointmentController {
   async index(req, res) {
@@ -104,7 +105,7 @@ class AppointmentController {
 
     // creating a notification
     await Notification.create({
-      content: `Nova notificação de ${ user.name } para o ${ formatedDate } `,
+      content: `Nova notificação de ${user.name} para o ${formatedDate} `,
       user: provider_id,
     });
 
@@ -144,20 +145,11 @@ class AppointmentController {
     }
     apponitment.canceled_at = new Date();
 
-    await Mail.sendMail({
-      to: `${ apponitment.provider.name }<${ apponitment.provider.email }>`,
-      subject: 'Agendamento Cancelado',
-      template: 'cancellation',
-      context: {
-        provider: apponitment.provider.name,
-        user: apponitment.user.name,
-        date: format(apponitment.date, "'dia' dd 'de' MMM', às' H:mm'h' ", {
-          locale: pt,
-        }),
-      },
-    });
-
     await apponitment.save();
+
+    await Queue.add(CancellationMail.key, {
+      apponitment,
+    });
 
     return res.json(apponitment);
   }
