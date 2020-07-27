@@ -11,6 +11,6 @@ Esta é uma api desenvolvida para uma aplicação web/mobile de de serviços de 
 
 + Postgress
 
-+ Heroku
++ Heroku.
 
 
